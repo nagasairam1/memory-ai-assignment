@@ -16,17 +16,27 @@ This project demonstrates:
 
 ---
  📂 Project Structure
-app/
-memory_extractor.py
-personality_engine.py
-response_generator.py
-utils.py
-main.py
-requirements.txt
-README.md
-.gitignore
-sample_data/chat_messages.json
-tests/test_memory_extractor.py
+gupshupp-ai-assignment/
+│
+├─ app/
+│   ├─ memory_extractor.py
+│   ├─ personality_engine.py
+│   ├─ llm_local.py                ← loads Qwen2-1.5B offline via llama-cpp
+│   ├─ utils.py
+│   └─ run.py                      ← CLI + Streamlit support
+│
+├─ ui/
+│   └─ streamlit_app.py            ← clean UI for testing memory & personas
+│
+├─ data/
+│   └─ sample_messages.json
+│
+├─ models/
+│   └─ qwen2-1.5b-instruct.Q4_K_M.gguf   ← **included in ZIP**
+│
+├─ requirements.txt
+├─ README.md
+└─ LICENSE
 
 ---
 
