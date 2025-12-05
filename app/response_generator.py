@@ -25,20 +25,41 @@ class ResponseGenerator:
         - If any emotional pattern is negative → therapist_style
         - Else if any preference sounds fun/travel/positive → witty_friend
         - Else → calm_mentor
-        """
-        emos: List[Dict[str, Any]] = memory.get("emotional_patterns") or []
-        prefs: List[Dict[str, Any]] = memory.get("preferences") or []
 
+        Handles both:
+        - preferences: List[dict]
+        - preferences: List[str]
+        """
+
+        # --- emotional patterns (always dicts ideally) ---
+        emos_raw = memory.get("emotional_patterns") or []
+        emos: List[Dict[str, Any]] = []
+        for e in emos_raw:
+            if isinstance(e, dict):
+                emos.append(e)
+
+        # --- preferences: normalize to list of dicts with "value" key ---
+        prefs_raw = memory.get("preferences") or []
+        prefs: List[Dict[str, Any]] = []
+        for p in prefs_raw:
+            if isinstance(p, dict):
+                prefs.append(p)
+            elif isinstance(p, str):
+                prefs.append({"value": p})
+            # ignore anything else
+
+        # If any negative emotion → therapist style
         if any(e.get("emotion") == "negative" for e in emos):
             return "therapist_style"
 
-        if any(
-            any(word in (p.get("value", "").lower())
-                for word in ["travel", "trip", "movie", "music", "food", "fun"])
-            for p in prefs
-        ):
-            return "witty_friend"
+        # If any fun / travel / casual preference → witty friend
+        fun_keywords = ["travel", "trip", "movie", "music", "food", "fun", "weekend", "trek", "game"]
+        for pref in prefs:
+            val = str(pref.get("value", "")).lower()
+            if any(word in val for word in fun_keywords):
+                return "witty_friend"
 
+        # fallback
         return "calm_mentor"
 
     # -------- Base "before" response --------
