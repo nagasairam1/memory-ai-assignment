@@ -1,56 +1,105 @@
-# GupShupp Assignment — Companion AI (Memory + Personality Engine)
+ GupShupp Assignment — Companion AI (Memory + Personality Engine)
 
 This project demonstrates:
-✔ Memory extraction from 30 chat messages  
-✔ Personality-based response engine  
-✔ Before/After tone transformation  
+
+- 🧠 **Memory extraction** from a batch of ~30 user chat messages  
+- 🎭 **Personality-based response engine** (calm mentor / witty friend / therapist-style)  
+- 🔁 **Before/After tone transformation** for the same reply  
+
+Everything runs **fully locally** using Python + Streamlit.  
+No external APIs or keys are required.
 
 ---
 
-🔧 How to Run
+ 🔧 How to Run (Local)
 
-1. Install dependencies: pip install -r requirements.txt
-2.  Run app: streamlit run main.py  
-3. Upload `chat_messages.json` (list of 30 user messages)
-4. Type any prompt → see before/after personality change.
+ 1. Create & activate virtual environment (Windows PowerShell)
 
----
- 📂 Project Structure
-gupshupp-ai-assignment/
+```bash
+cd memory-ai-assignment-main
+
+python -m venv venv
+venv\Scripts\activate
+If python is not recognized, install Python from python.org and restart your terminal.
+
+2. Install dependencies
+bash
+
+pip install -r requirements.txt
+3. Run the Streamlit app
+bash
+
+streamlit run main.py
+Then open the URL shown in the terminal (usually http://localhost:8501).
+
+💻 How to Use the App
+Prepare a JSON file: an array of user messages (strings), ideally 30 messages.
+
+Example structure:
+
+json
+
+[
+  "I love travelling and long drives",
+  "Sometimes I feel really low when work becomes stressful",
+  "My name is Raghav",
+  "I prefer short and direct answers"
+]
+In the UI:
+
+Click “Upload chat messages JSON file (array of 30 messages)”
+
+Select your JSON file (e.g., sample_data/chat_messages.json)
+
+The app will show:
+
+🧩 Extracted Memory
+
+preferences
+
+emotional_patterns
+
+facts
+
+In “Test Personality Response Engine”:
+
+Type a user message (e.g., I hate when people reply very late.)
+
+The app will show:
+
+🔹 Before (Neutral Response)
+
+🔹 After (Personality-Aware Response)
+
+persona_mode (e.g., calm_mentor, witty_friend, therapist_style)
+
+📂 Project Structure
+text
+
+memory-ai-assignment-main/
 │
 ├─ app/
-│   ├─ memory_extractor.py
-│   ├─ personality_engine.py
-│   ├─ llm_local.py                ← loads Qwen2-1.5B offline via llama-cpp
-│   ├─ utils.py
-│   └─ run.py                      ← CLI + Streamlit support
+│   ├─ memory_extractor.py       Extracts preferences, emotions, facts from messages
+│   ├─ response_generator.py     Neutral + personality-aware responses
+│   ├─ utils.py                  Helpers (e.g., load_messages)
 │
-├─ ui/
-│   └─ streamlit_app.py            ← clean UI for testing memory & personas
+├─ sample_data/
+│   └─ chat_messages.json        Example 30-message file for quick demo
 │
-├─ data/
-│   └─ sample_messages.json
+├─ tests/
+│   └─ test_memory_extractor.py  Very simple sanity test
 │
-├─ models/
-│   └─ qwen2-1.5b-instruct.Q4_K_M.gguf   ← **included in ZIP**
-│
+├─ main.py                       Streamlit UI entrypoint
 ├─ requirements.txt
 ├─ README.md
 └─ LICENSE
+🧪 Sample Data
+Create the folder sample_data (if not already present), then add:
 
----
+sample_data/chat_messages.json:
 
- ✨ Notes
-- Pure local execution — no API keys needed
-- No deployment required by user (matches assignment request)
-- Personality selection is inferred from extracted user memory
+json
 
----
-📁 Folder: sample_data/
-
-Create folder sample_data then add:
-
-📄 sample_data/chat_messages.json
 [
   "I love travelling and long drives",
   "Sometimes I feel really low when work becomes stressful",
@@ -83,34 +132,77 @@ Create folder sample_data then add:
   "I hate being compared to others",
   "I love people with good sense of humor"
 ]
+Use this file in the UI for your demo.
 
+🧪 Tests
+Create the folder tests and add:
+
+tests/test_memory_extractor.py:
+
+python
 
 from app.memory_extractor import MemoryExtractor
 
-messages = [
-    "I love travelling",
-    "I feel sad sometimes",
-    "My name is Rahul",
-    "I live in Hyderabad"
-]
-
-📁 Folder: tests/
-
-Create folder tests then add:
-
-📄 tests/test_memory_extractor.py
-
 def test_extraction():
+    messages = [
+        "I love travelling",
+        "I feel sad sometimes",
+        "My name is Rahul",
+        "I live in Hyderabad"
+    ]
+
     mem = MemoryExtractor().extract(messages)
-    assert len(mem["preferences"]) > 0
-    assert len(mem["facts"]) > 0
-    assert len(mem["emotional_patterns"]) > 0
 
-print("✔ Memory extractor test passed")
+    assert isinstance(mem, dict)
+    assert "preferences" in mem
+    assert "facts" in mem
+    assert "emotional_patterns" in mem
+    assert len(mem["preferences"]) >= 1
+    assert len(mem["facts"]) >= 1
+    assert len(mem["emotional_patterns"]) >= 1
 
+if __name__ == "__main__":
+    test_extraction()
+    print("✔ Memory extractor test passed")
+Run the test like this:
 
-Run:
-streamlit run main.py
+bash
 
+venv\Scripts\activate
+python tests/test_memory_extractor.py
+🧠 What This Demonstrates (For Reviewers)
+Reasoning & Prompt-less Heuristics
+Memory extractor uses simple, interpretable rules over raw messages to infer:
 
-   
+preferences (likes/dislikes, style)
+
+emotional patterns (positive / negative themes)
+
+factual information (name, city, habits)
+
+Structured Output Parsing
+Memory is always returned as:
+
+json
+
+{
+  "preferences": [...],
+  "emotional_patterns": [...],
+  "facts": [...]
+}
+Personality Engine
+ResponseGenerator chooses persona based on memory:
+
+More negative emotional patterns → therapist_style
+
+Fun/travel/hobby-heavy preferences → witty_friend
+
+Otherwise → calm_mentor
+
+Then it generates both a neutral and a personality-aware answer for the same input.
+
+Modular System Design
+
+Extraction and response generation are separated (memory_extractor.py vs response_generator.py).
+
+UI (main.py) just orchestrates them.
